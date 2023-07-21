@@ -1,51 +1,52 @@
-import * as React from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar } from '@mui/x-date-pickers';
-import { Select, FormControl, InputLabel, MenuItem } from '@mui/material';
+import { Select, FormControl, InputLabel, MenuItem, CircularProgress } from '@mui/material';
 import Menu from './Menu';
+import api from './services/api';
+import AppSelect from './components/AppSelect';
 
 export default function App() {
-  let age = 123;
+  const [profissionais, setProfissionais] = useState([]);
+  const [servicos, setServicos] = useState([]);
+  
+  useEffect(() => {
+    if(!profissionais.length) {
+      api.genericList('/profissionais').then(r => {
+        setProfissionais(r.data);
+      });
+    }
+
+    if(!servicos.length) {
+      api.genericList('/servicos').then(r => {
+        setServicos(r.data);
+      });
+    }
+  });
+
+  const fn = (items) => items.map(({ id, nome }) => (<MenuItem value={ id } key={id}>{nome}</MenuItem>));
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Container maxWidth="md">
+      <Container maxWidth="sm">
+      <Box sx={{ my: 2, mx: 12 }}>
         <Menu />
-        <Box sx={{ my: 8, mx: 12 }}>
+      </Box>
+        <Box sx={{ my: 2, mx: 12 }}>
+            <AppSelect id="profissionais" label="Profissionais" items={ profissionais } fn={fn} onChange = {console.log}/>
+        </Box>
 
-          <FormControl fullWidth>
-            <InputLabel id="demo-simple-select-label">Profissionais</InputLabel>
-            <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              value={age}
-              label="Age"
-            >
-              <MenuItem value={10}>Ten</MenuItem>
-              <MenuItem value={20}>Twenty</MenuItem>
-              <MenuItem value={30}>Thirty</MenuItem>
-            </Select>
-          </FormControl>
-          <br />
-          <br />
-          <FormControl fullWidth>
-            <InputLabel id="demo-simple-select-label">Serviços</InputLabel>
-            <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              value={age}
-              label="Age"
-            >
-              <MenuItem value={10}>Ten</MenuItem>
-              <MenuItem value={20}>Twenty</MenuItem>
-              <MenuItem value={30}>Thirty</MenuItem>
-            </Select>
-          </FormControl>
+        <Box sx={{ my: 2, mx: 12 }}>
+          <AppSelect id="servicos" label="Serviços" items={ servicos } fn={fn} onChange = {alert}/>
+        </Box>
 
+        <Box sx={{ my: 2, mx: 12 }}>
           <DateCalendar />
         </Box>
+
       </Container>
     </LocalizationProvider>
   );
